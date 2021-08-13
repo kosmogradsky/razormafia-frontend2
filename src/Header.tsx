@@ -6,43 +6,21 @@ import { UserState } from "./UserState";
 const styles = require("./Header.css").default;
 
 export interface HeaderProps {
+  userState: UserState;
   socket: Socket;
 }
 
 export function Header(props: HeaderProps) {
-  const [userState, setUserState] = React.useState<UserState>({
-    type: "LoadingUserState",
-  });
-
   const onSignOut = React.useCallback(() => {
     props.socket.emit("sign out");
   }, [props.socket]);
 
-  React.useEffect(() => {
-    const onAuthStateUpdated = (user: { id: string; email: string } | null) => {
-      if (user === null) {
-        setUserState({ type: "WithoutUserState" });
-      } else {
-        setUserState({
-          type: "LoadedUserState",
-          user: { email: user.email, uid: user.id },
-        });
-      }
-    };
-
-    props.socket.on("auth state updated", onAuthStateUpdated);
-
-    return () => {
-      props.socket.off("auth state updated", onAuthStateUpdated);
-    };
-  }, [props.socket]);
-
   function getUserView() {
-    switch (userState.type) {
+    switch (props.userState.type) {
       case "LoadedUserState": {
         return (
           <>
-            <span>Привет снова, {userState.user.email}</span>
+            <span>Привет снова, {props.userState.user.email}</span>
             <button type="button" onClick={onSignOut}>
               Выйти
             </button>

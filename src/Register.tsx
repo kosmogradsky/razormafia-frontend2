@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useHistory } from "react-router-dom";
 import { Socket } from "socket.io-client";
 
 interface RegisterState {
@@ -20,7 +19,6 @@ export function Register(props: RegisterProps) {
     repeatPassword: "",
     message: "",
   });
-  const history = useHistory();
 
   const handleSubmit = React.useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -46,10 +44,40 @@ export function Register(props: RegisterProps) {
 
   React.useEffect(() => {
     const onRegisterError = (description: string) => {
-      // TODO
-      // switch(description) {
-      //   case "EMAIL_MUST_BE_STRING":
-      // }
+      switch (description) {
+        case "EMAIL_MUST_BE_STRING": {
+          setRegisterState({
+            ...registerState,
+            message:
+              "Мы получили повреждённые данные вместо адреса электронной почты. Попробуйте ввести адрес электронной почты заново.",
+          });
+          break;
+        }
+        case "PASSWORD_MUST_BE_STRING": {
+          setRegisterState({
+            ...registerState,
+            message:
+              "Мы получили повреждённые данные вместо пароля. Попробуйте ввести пароль заново.",
+          });
+          break;
+        }
+        case "EMAIL_NOT_VALID": {
+          setRegisterState({
+            ...registerState,
+            message:
+              "То, что вы ввели в адрес электронной почты, не похоже на адрес электронной почты. Пожалуйста, перепроверьте и исправьте ошибку, прежде чем продолжать.",
+          });
+          break;
+        }
+        case "PASSWORD_TOO_SHORT": {
+          setRegisterState({
+            ...registerState,
+            message:
+              "Ваш пароль слишком короткий. Пожалуйста, придумайте пароль подлиннее.",
+          });
+          break;
+        }
+      }
     };
 
     props.socket.on("register error", onRegisterError);
@@ -57,5 +85,70 @@ export function Register(props: RegisterProps) {
     return () => {
       props.socket.off("register error", onRegisterError);
     };
+  }, [props.socket, registerState]);
+
+  React.useEffect(() => {
+    const onRegisterSuccess = () => {
+      setRegisterState({
+        email: "",
+        password: "",
+        repeatPassword: "",
+        message: "Вы успешно создали пользователя. Теперь можете залогиниться.",
+      });
+    };
+
+    props.socket.on("register success", onRegisterSuccess);
+
+    return () => {
+      props.socket.off("register success", onRegisterSuccess);
+    };
   }, [props.socket]);
+
+  return (
+    <>
+      <form action="" onSubmit={handleSubmit}>
+        <label>
+          <span>Электронная почта: </span>
+          <input
+            type="text"
+            name="email"
+            value={registerState.email}
+            onChange={(event) => {
+              setRegisterState({ ...registerState, email: event.target.value });
+            }}
+          />
+        </label>
+        <label>
+          <span>Придумайте пароль: </span>
+          <input
+            type="password"
+            name="password"
+            value={registerState.password}
+            onChange={(event) => {
+              setRegisterState({
+                ...registerState,
+                password: event.target.value,
+              });
+            }}
+          />
+        </label>
+        <label>
+          <span>Повторите придуманный пароль: </span>
+          <input
+            type="password"
+            name="repeat-password"
+            value={registerState.repeatPassword}
+            onChange={(event) => {
+              setRegisterState({
+                ...registerState,
+                repeatPassword: event.target.value,
+              });
+            }}
+          />
+        </label>
+        <button type="submit">Зарегистрироваться</button>
+      </form>
+      {registerState.message === "" ? null : <div>{registerState.message}</div>}
+    </>
+  );
 }

@@ -3,21 +3,40 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Socket } from "socket.io-client";
 import { Header } from "./Header";
 import { Login } from "./Login";
+import { Register } from "./Register";
+import { UserState } from "./UserState";
 
 export interface MainProps {
   socket: Socket;
 }
 
 export function Main(props: MainProps) {
-  React.useEffect(() => {
-    props.socket.on("auth state updated", (user) => {
-      console.log("auth state updated", user);
-    });
+  const [userState, setUserState] = React.useState<UserState>({
+    type: "LoadingUserState",
   });
+
+  React.useEffect(() => {
+    const onAuthStateUpdated = (user: { id: string; email: string } | null) => {
+      if (user === null) {
+        setUserState({ type: "WithoutUserState" });
+      } else {
+        setUserState({
+          type: "LoadedUserState",
+          user: { email: user.email, uid: user.id },
+        });
+      }
+    };
+
+    props.socket.on("auth state updated", onAuthStateUpdated);
+
+    return () => {
+      props.socket.off("auth state updated", onAuthStateUpdated);
+    };
+  }, [props.socket]);
 
   return (
     <BrowserRouter>
-      <Header socket={props.socket} />
+      <Header socket={props.socket} userState={userState} />
 
       <Switch>
         <Route exact path="/">
@@ -27,7 +46,7 @@ export function Main(props: MainProps) {
           <Login socket={props.socket} />
         </Route>
         <Route path="/register">
-          <div>Register</div>
+          <Register socket={props.socket} />
         </Route>
         <Route path="/videoroom">
           <div>Videoroom</div>
