@@ -2,6 +2,7 @@ import * as React from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Socket } from "socket.io-client";
 import { Header } from "./Header";
+import { Home } from "./Home";
 import { Login } from "./Login";
 import { Register } from "./Register";
 import { UserState } from "./UserState";
@@ -40,7 +41,7 @@ export function Main(props: MainProps) {
 
       <Switch>
         <Route exact path="/">
-          <div>Home</div>
+          <Home socket={props.socket} userState={userState} />
         </Route>
         <Route path="/login">
           <Login socket={props.socket} />

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Socket } from "socket.io-client";
 import { capitalizeFirstLetter } from "./capitalizeFirstLetter";
+import { GameQueueForm } from "./GameQueueForm";
 import { getNumberWithCase } from "./getNumberWithCase";
 import { UserState } from "./UserState";
 
@@ -13,7 +14,9 @@ export function GameQueue(props: GameQueueProps) {
   const getSearchForm = () => {
     switch (props.userState.type) {
       case "LoadedUserState": {
-        return <GameQueueForm user={props.userState.user} />;
+        return (
+          <GameQueueForm socket={props.socket} />
+        );
       }
       case "LoadingUserState": {
         return <div>Загрузка...</div>;
