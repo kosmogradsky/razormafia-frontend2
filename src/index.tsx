@@ -5,7 +5,9 @@ import { Main } from "./Main";
 
 const root = document.createElement("div");
 
-const socket = io("ws://localhost:8000");
+const socket = io("ws://localhost:8000", {
+  transports: ["websocket"],
+});
 
 render(<Main socket={socket} />, root);
 

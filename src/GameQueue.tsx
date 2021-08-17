@@ -32,6 +32,7 @@ export function GameQueue(props: GameQueueProps) {
 
   React.useEffect(() => {
     props.socket.emit("subscribe to queue length");
+    props.socket.emit("get queue length");
 
     return () => {
       props.socket.emit("unsubscribe from queue length");

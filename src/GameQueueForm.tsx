@@ -12,22 +12,16 @@ export function GameQueueForm(props: GameQueueFormProps) {
     const onEnteredQueue = () => {
       setIsQueueing(true);
     };
-
-    props.socket.on("entered queue", onEnteredQueue);
-
-    return () => {
-      props.socket.off("entered queue", onEnteredQueue);
-    };
-  }, [props.socket]);
-
-  React.useEffect(() => {
     const onExitedQueue = () => {
       setIsQueueing(false);
     };
 
+    props.socket.on("entered queue", onEnteredQueue);
     props.socket.on("exited queue", onExitedQueue);
+    props.socket.emit("get is queueing");
 
     return () => {
+      props.socket.off("entered queue", onEnteredQueue);
       props.socket.off("exited queue", onExitedQueue);
     };
   }, [props.socket]);
@@ -43,9 +37,13 @@ export function GameQueueForm(props: GameQueueFormProps) {
   return isQueueing ? (
     <>
       <div>Вы ищете игру</div>
-      <button type="button" onClick={stopSearching}>Остановить поиск</button>
+      <button type="button" onClick={stopSearching}>
+        Остановить поиск
+      </button>
     </>
   ) : (
-    <button type="button" onClick={startSearching}>Начать поиск</button>
-  )
+    <button type="button" onClick={startSearching}>
+      Начать поиск
+    </button>
+  );
 }
